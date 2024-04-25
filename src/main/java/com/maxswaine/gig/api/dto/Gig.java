@@ -23,6 +23,8 @@ public class Gig {
     private String location;
     private LocalDate date;
     private boolean favourite;
+
+    @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Moment> moments;
 
     public Gig() {

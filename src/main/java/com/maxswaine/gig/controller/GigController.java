@@ -1,13 +1,10 @@
 package com.maxswaine.gig.controller;
 
 import com.maxswaine.gig.api.dto.Gig;
-import com.maxswaine.gig.repository.GigRepository;
 import com.maxswaine.gig.service.GigService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -15,31 +12,41 @@ import java.util.List;
 public class GigController {
 
     private final GigService gigService;
-    private final GigRepository gigRepository;
 
     @Autowired
-    public GigController(GigService gigService, GigRepository gigRepository) {
+    public GigController(GigService gigService) {
         this.gigService = gigService;
-        this.gigRepository = gigRepository;
     }
 
+    // READ
     @GetMapping
-    public List<Gig> getGigs() {
-        return gigRepository.findAll();
+    public List<Gig> getAllGigs() {
+        return gigService.getAllGigs();
     }
 
+    @GetMapping(params = "artist")
+    public List<Gig> getGigByArtist(@RequestParam(required = false) String artist) {
+        if (artist != null) {
+            artist = artist.replace("_", " ");
+        }
+        return gigService.getGigsByArtist(artist);
+    }
+
+    // CREATE
     @PostMapping
-    public void addGig(Gig gig) {
+    public void addGig(@RequestBody Gig gig) {
         gigService.addGig(gig);
     }
 
+    // DELETE
     @DeleteMapping(path = "{gigId}")
     public void deleteGig(@PathVariable("gigId") Long id) {
         gigService.deleteGig(id);
     }
 
+    // UPDATE
     @PutMapping(path = "{gigId}")
-    public void updateGig(@PathVariable("gigId") Long id, @RequestParam(required = false) String artist, @RequestParam(required = false) String venue, @RequestParam(required = false) String location, @RequestParam(required = false) LocalDate date, @RequestParam(required = false) boolean favourite) {
-        gigService.updateGig(id, artist, venue, location, date, favourite);
+    public void updateGig(@PathVariable("gigId") Long id, @RequestBody Gig gig) {
+        gigService.updateGig(id, gig.getArtist(), gig.getVenue(), gig.getLocation(), gig.getDate(), gig.isFavourite());
     }
 }

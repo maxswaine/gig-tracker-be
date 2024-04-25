@@ -1,5 +1,6 @@
 package com.maxswaine.gig.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,8 +15,12 @@ public class Moment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long gigId;
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "gig_id")
+    @JsonIgnore
+    private Gig gig;
 
     public Moment() {
     }
