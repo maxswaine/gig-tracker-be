@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,7 +21,7 @@ public class Gig {
     private String artist;
     private String venue;
     private String location;
-    private LocalDate date;
+    private LocalDateTime date;
     private boolean favourite;
 
     @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -30,7 +30,7 @@ public class Gig {
     public Gig() {
     }
 
-    public Gig(Long id, String artist, String venue, String location, LocalDate date, boolean favourite, List<Moment> moments) {
+    public Gig(Long id, String artist, String venue, String location, LocalDateTime date, boolean favourite, List<Moment> moments) {
         this.id = id;
         this.artist = artist;
         this.venue = venue;
@@ -40,7 +40,7 @@ public class Gig {
         this.moments = moments;
     }
 
-    public Gig(String artist, String venue, String location, LocalDate date, boolean favourite) {
+    public Gig(String artist, String venue, String location, LocalDateTime date, boolean favourite) {
         this.artist = artist;
         this.venue = venue;
         this.location = location;

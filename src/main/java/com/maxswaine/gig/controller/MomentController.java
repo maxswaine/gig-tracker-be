@@ -29,7 +29,7 @@ public class MomentController {
     }
 
     @PostMapping
-    public void addMoment(Moment moment) {
+    public void addMoment(@RequestBody  Moment moment) {
         momentService.addMoment(moment);
     }
 
@@ -39,7 +39,7 @@ public class MomentController {
     }
 
     @PutMapping(path = "{momentId}")
-    public void updateMoment(@PathVariable("momentId") Long id, @RequestParam(required = false) String moment) {
-        momentService.updateMoment(id, moment);
+    public void updateMoment(@PathVariable("momentId") Long id, @RequestBody Moment moment) {
+        momentService.updateMoment(id, moment.getDescription());
     }
 }

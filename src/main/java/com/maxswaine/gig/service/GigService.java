@@ -4,16 +4,23 @@ import com.maxswaine.gig.api.dto.Gig;
 import com.maxswaine.gig.repository.GigRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class GigService {
 
     private final GigRepository gigRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(GigService.class);
+
 
     @Autowired
     public GigService(GigRepository gigRepository) {
@@ -25,12 +32,22 @@ public class GigService {
     }
 
     public Gig getGigbyId(Long id) {
-        return gigRepository.findById(id)
+        Gig gigById = gigRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Gig not found with that id " + id));
+        System.out.println(gigById);
+        return gigById;
     }
 
     public List<Gig> getGigsByArtist(String artist) {
-        return gigRepository.findGigsByArtistContainingIgnoreCase(artist);
+        List<Gig> gigsByArtist = gigRepository.findGigsByArtistContainingIgnoreCase(artist);
+        if(gigsByArtist.isEmpty()){
+            logger.error("There are no artists that contain {}", artist);
+        }
+        System.out.println("Getting " + gigsByArtist.size() + " artists:\n");
+        for (Gig gig : gigsByArtist) {
+            System.out.println(gig.getArtist() + "\n");
+        }
+        return gigsByArtist;
     }
 
     public void addGig(Gig gig) {
@@ -40,21 +57,21 @@ public class GigService {
     public void deleteGig(Long id) {
         boolean exists = gigRepository.existsById(id);
         if (!exists) {
-            throw new IllegalStateException("Gig does not exist with id: " + id + ".");
+            logger.error("Gig does not exist with id: {}", id);
         }
         gigRepository.deleteById(id);
     }
 
     @Transactional
-    public void updateGig(Long id, String artist, String venue, String location, LocalDate date, boolean favourite) {
+    public void updateGig(Long id, String artist, String venue, String location, LocalDateTime date, boolean favourite) {
         Gig gig = gigRepository.getReferenceById(id);
-        if (artist != null && artist.length() > 0 && !gig.getArtist().equals(artist)) {
+        if (artist != null && !artist.isEmpty() && !gig.getArtist().equals(artist)) {
             gig.setArtist(artist);
         }
-        if (venue != null && venue.length() > 0 && !gig.getVenue().equals(venue)) {
+        if (venue != null && !venue.isEmpty() && !gig.getVenue().equals(venue)) {
             gig.setVenue(venue);
         }
-        if (location != null && location.length() > 0 && !gig.getLocation().equals(location)) {
+        if (location != null && !location.isEmpty() && !gig.getLocation().equals(location)) {
             gig.setLocation(location);
         }
         if (date != null && !gig.getDate().equals(date)) {
@@ -63,6 +80,8 @@ public class GigService {
         if (favourite != gig.isFavourite()) {
             gig.setFavourite(favourite);
         }
+
+        System.out.println("Updated Gig:\n" + gig);
 
     }
 

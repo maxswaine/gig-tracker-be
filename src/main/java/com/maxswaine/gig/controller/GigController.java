@@ -25,11 +25,16 @@ public class GigController {
     }
 
     @GetMapping(params = "artist")
-    public List<Gig> getGigByArtist(@RequestParam(required = false) String artist) {
+    public List<Gig> getGigByArtist(String artist) {
         if (artist != null) {
             artist = artist.replace("_", " ");
         }
         return gigService.getGigsByArtist(artist);
+    }
+
+    @GetMapping(params = "id")
+    public Gig getGigById(Long id){
+        return gigService.getGigbyId(id);
     }
 
     // CREATE
