@@ -2,13 +2,16 @@ package com.maxswaine.gig.controller;
 
 import com.maxswaine.gig.api.dto.Gig;
 import com.maxswaine.gig.service.GigService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/gig")
+@Slf4j
 public class GigController {
 
     private final GigService gigService;
@@ -21,7 +24,9 @@ public class GigController {
     // READ
     @GetMapping
     public List<Gig> getAllGigs() {
-        return gigService.getAllGigs();
+        gigService.getAllGigs();
+        return gigService.getAllGigs().getBody();
+
     }
 
     @GetMapping(params = "artist")
