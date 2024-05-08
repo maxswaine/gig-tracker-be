@@ -5,6 +5,8 @@ import com.maxswaine.gig.api.dto.Moment;
 import com.maxswaine.gig.repository.GigRepository;
 import com.maxswaine.gig.repository.MomentRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Service
 public class MomentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GigService.class);
 
     private final MomentRepository momentRepository;
     private final GigRepository gigRepository;
@@ -39,8 +43,9 @@ public class MomentService {
     }
 
     // CREATE
-    public void addMoment(Moment moment) {
-        momentRepository.save(moment);
+    public void addMoments(List<Moment> moments) {
+        logger.info("Saving {} moments associated with gig", moments.size());
+        momentRepository.saveAll(moments);
     }
 
     // DELETE

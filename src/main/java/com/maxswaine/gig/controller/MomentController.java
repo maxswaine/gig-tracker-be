@@ -29,8 +29,8 @@ public class MomentController {
     }
 
     @PostMapping
-    public void addMoment(@RequestBody  Moment moment) {
-        momentService.addMoment(moment);
+    public void addMoments(@RequestBody  List<Moment> moments) {
+        momentService.addMoments(moments);
     }
 
     @DeleteMapping(path = "{momentId}")

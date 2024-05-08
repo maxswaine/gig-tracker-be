@@ -1,9 +1,7 @@
 package com.maxswaine.gig.api.dto;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +11,9 @@ import java.util.List;
 @ToString
 @Entity
 @Table
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Gig {
 
     @Id
@@ -26,19 +27,6 @@ public class Gig {
 
     @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Moment> moments;
-
-    public Gig() {
-    }
-
-    public Gig(Long id, String artist, String venue, String location, LocalDateTime date, boolean favourite, List<Moment> moments) {
-        this.id = id;
-        this.artist = artist;
-        this.venue = venue;
-        this.location = location;
-        this.date = date;
-        this.favourite = favourite;
-        this.moments = moments;
-    }
 
     public Gig(String artist, String venue, String location, LocalDateTime date, boolean favourite) {
         this.artist = artist;

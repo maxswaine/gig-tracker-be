@@ -12,4 +12,6 @@ public interface GigRepository extends JpaRepository<Gig, Long> {
     List<Gig> findGigsByArtistContainingIgnoreCase(String artist);
 
     List<Gig> findGigByFavourite(boolean favourite);
+
+    List<Gig> findGigsByVenueContainingIgnoreCase(String venue);
 }
