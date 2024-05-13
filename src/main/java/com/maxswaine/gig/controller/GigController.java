@@ -1,27 +1,25 @@
 package com.maxswaine.gig.controller;
 
 import com.maxswaine.gig.api.dto.Gig;
-import com.maxswaine.gig.api.dto.Moment;
 import com.maxswaine.gig.service.GigService;
-import com.maxswaine.gig.service.MomentService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/gig")
 public class GigController {
 
     private final GigService gigService;
-    private final MomentService momentService;
 
     @Autowired
-    public GigController(GigService gigService, MomentService momentService) {
+    public GigController(GigService gigService) {
         this.gigService = gigService;
-        this.momentService = momentService;
     }
 
     // READ
@@ -40,38 +38,42 @@ public class GigController {
     }
 
     @GetMapping(params = "venue")
-    public ResponseEntity<List<Gig>> getGigsByVenue(String venue){
+    public ResponseEntity<List<Gig>> getGigsByVenue(String venue) {
         return new ResponseEntity<>(gigService.getGigsbyVenue(venue), HttpStatus.OK);
     }
 
     // CREATE
     @PostMapping
-    public ResponseEntity<Void> addGigWithMoments(@RequestBody Gig gig) {
-        Gig savedGig = gigService.addGig(gig);
-
-        if (savedGig != null && savedGig.getId() != null && !savedGig.getMoments().isEmpty()) {
-            for (Moment moment : savedGig.getMoments()) {
-                moment.setGig(savedGig);
-            }
-            momentService.addMoments(savedGig.getMoments());
-        }
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<Gig> addGigWithMoments(@RequestBody Gig gig) {
+        Gig savedGig = gigService.addGigWithMoments(gig);
+        return new ResponseEntity<>(savedGig, HttpStatus.CREATED);
     }
-
-
 
     // DELETE
     @DeleteMapping(path = "{gigId}")
-    public ResponseEntity<Void> deleteGig(@PathVariable("gigId") Long id) {
-        gigService.deleteGig(id);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    public ResponseEntity<Void> deleteGig(@PathVariable("gigId") String id) {
+        try {
+            gigService.deleteGig(id);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     // UPDATE
-    @PutMapping(path = "{gigId}")
-    public ResponseEntity<Gig> updateGig(@PathVariable("gigId") Long id, @RequestBody Gig gig) {
-        Gig updatedGig = gigService.updateGig(id, gig.getArtist(), gig.getVenue(), gig.getLocation(), gig.getDate(), gig.isFavourite());
-        return new ResponseEntity<>(updatedGig, HttpStatus.OK);
+    @PatchMapping("/{id}")
+    public ResponseEntity<Gig> updateGig(@PathVariable String id, @RequestBody Gig gigUpdate) {
+        try {
+            Gig existingGig = gigService.getGigById(id);
+            if(gigUpdate.getMoments().isEmpty()){
+                BeanUtils.copyProperties(gigUpdate, existingGig, "id", "moments");
+                return new ResponseEntity<>(gigService.addGig(gig), HttpStatus.OK);
+            } else {
+                BeanUtils.copyProperties(gigUpdate, existingGig, "id", "moments");
+                return new ResponseEntity<>(gigService.addGigWithMoments(gigUpdate), HttpStatus.OK);
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
