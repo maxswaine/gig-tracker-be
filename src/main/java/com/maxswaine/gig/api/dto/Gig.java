@@ -2,9 +2,11 @@ package com.maxswaine.gig.api.dto;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,8 +19,9 @@ import java.util.List;
 public class Gig {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @UuidGenerator
+    @Column(nullable = false, updatable = false)
+    private String id;
     private String artist;
     private String venue;
     private String location;

@@ -1,8 +1,10 @@
 package com.maxswaine.gig.service;
 
 import com.maxswaine.gig.api.dto.Gig;
+import com.maxswaine.gig.api.dto.Moment;
 import com.maxswaine.gig.repository.GigRepository;
-import jakarta.transaction.Transactional;
+import com.maxswaine.gig.repository.MomentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -18,11 +22,13 @@ public class GigService {
 
     private static final Logger logger = LoggerFactory.getLogger(GigService.class);
     private final GigRepository gigRepository;
+    private final MomentRepository momentRepository;
 
 
     @Autowired
-    public GigService(GigRepository gigRepository) {
+    public GigService(GigRepository gigRepository, MomentRepository momentRepository) {
         this.gigRepository = gigRepository;
+        this.momentRepository = momentRepository;
     }
 
     public List<Gig> getAllGigs() {
@@ -31,6 +37,20 @@ public class GigService {
         logger.info("Retrieved {} gigs", allGigs.size()); // Logging the number of gigs retrieved
         return allGigs;
     }
+
+    public Gig getGigById(String id) {
+        logger.info("Fetching gig with id {}", id);
+        return gigRepository.findById(id)
+                .map(gig -> {
+                    logger.info("Found gig with id {}: {}", id, gig);
+                    return gig;
+                })
+                .orElseThrow(() -> {
+                    logger.error("Gig not found with id {}", id);
+                    return new EntityNotFoundException(id);
+                });
+    }
+
 
     public List<Gig> getGigsbyVenue(String venue) {
         List<Gig> gigsByVenue = gigRepository.findGigsByVenueContainingIgnoreCase(venue);
@@ -53,61 +73,71 @@ public class GigService {
         return gigsByArtist;
     }
 
-    public Gig addGig(Gig gig) {
-        logger.info("Gig created:");
+    public Gig addGigWithMoments(Gig gig) {
+        logger.info("Gig created with moments:");
         logger.info(gig.toString());
+        for (Moment moment : gig.getMoments()) {
+            moment.setGig(gig);
+        }
         return gigRepository.save(gig);
     }
 
-    public void deleteGig(Long id) {
-        boolean exists = gigRepository.existsById(id);
-        if (!exists) {
-            logger.error("Gig does not exist with id: {}", id);
-        } else {
+    public void deleteGig(String id) {
+        Optional<Gig> gig = gigRepository.findById(id);
+        if (gig.isPresent()) {
             logger.info("Gig {} successfully deleted", id);
+            gigRepository.deleteById(id);
+        } else {
+            logger.error("Gig does not exist with id: {}", id);
+            throw new IllegalArgumentException("Gig with id " + id + " does not exist");
         }
-        gigRepository.deleteById(id);
     }
 
-    @Transactional
-    public Gig updateGig(Long id, String artist, String venue, String location, LocalDateTime date, boolean favourite) {
-        Gig gig = gigRepository.getReferenceById(id);
-        int changes = 0;
+    public Gig updateGigPartial(String id, Map<String, Object> updates) {
+        Gig gigToUpdate = gigRepository.findById(id).orElseThrow();
 
-        if (artist != null && !artist.isEmpty() && !gig.getArtist().equals(artist)) {
-            changes++;
-            logger.info("Artist changed to {}", artist);
-            gig.setArtist(artist);
-        }
-        if (venue != null && !venue.isEmpty() && !gig.getVenue().equals(venue)) {
-            changes++;
-            logger.info("Venue changed to {}", venue);
-            gig.setVenue(venue);
-        }
-        if (location != null && !location.isEmpty() && !gig.getLocation().equals(location)) {
-            changes++;
-            logger.info("Location changed to {}", location);
-            gig.setLocation(location);
-        }
-        if (date != null && !gig.getDate().equals(date)) {
-            changes++;
-            logger.info("Date changed to {}", date);
-            gig.setDate(date);
-        }
-        if (favourite != gig.isFavourite()) {
-            changes++;
-            if (favourite){
-                logger.info("This gig is now favourited");
-            } else{
-                logger.info("This gig has been unfavourited");
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "artist":
+                    gigToUpdate.setArtist((String) value);
+                    break;
+                case "venue":
+                    gigToUpdate.setVenue((String) value);
+                    break;
+                case "location":
+                    gigToUpdate.setLocation((String) value);
+                    break;
+                case "date":
+                    gigToUpdate.setDate((LocalDateTime) value);
+                    break;
+                case "favourite":
+                    gigToUpdate.setFavourite((Boolean) value);
+                    break;
+                case "moments":
+                    List<Map<String, Object>> moments = (List<Map<String, Object>>) value;
+                    for (Map<String, Object> momentData : moments) {
+                        String momentId = (String) momentData.get("id");
+                        String description = (String) momentData.get("description");
+                        Optional<Moment> momentOptional = momentRepository.findById(momentId);
+                        if (momentOptional.isPresent()) {
+                            Moment moment = momentOptional.get();
+                            moment.setDescription(description);
+                            momentRepository.save(moment);
+                        } else {
+                            Moment newMoment = new Moment(description);
+                            newMoment.setGig(gigToUpdate);
+                            gigToUpdate.getMoments().add(newMoment);
+                            momentRepository.save(newMoment);
+                        }
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid field: " + key);
             }
-            gig.setFavourite(favourite);
-        }
+        });
 
-        logger.info("A total of {} changes were made to Gig with id {}", changes, id);
+        logger.info("Gig Updated!");
 
-        return gig;
-
+        return gigRepository.save(gigToUpdate);
     }
-
 }

@@ -34,12 +34,7 @@ public class MomentController {
     }
 
     @DeleteMapping(path = "{momentId}")
-    public void deleteMoment(@PathVariable("momentId") Long id) {
+    public void deleteMoment(@PathVariable("momentId") String id) {
         momentService.deleteMoment(id);
-    }
-
-    @PutMapping(path = "{momentId}")
-    public void updateMoment(@PathVariable("momentId") Long id, @RequestBody Moment moment) {
-        momentService.updateMoment(id, moment.getDescription());
     }
 }

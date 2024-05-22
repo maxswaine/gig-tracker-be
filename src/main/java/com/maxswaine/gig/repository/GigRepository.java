@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface GigRepository extends JpaRepository<Gig, Long> {
+public interface GigRepository extends JpaRepository<Gig, String> {
 
     List<Gig> findGigsByArtistContainingIgnoreCase(String artist);
 

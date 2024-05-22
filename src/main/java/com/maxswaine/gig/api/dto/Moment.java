@@ -2,33 +2,26 @@ package com.maxswaine.gig.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class Moment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @UuidGenerator
+    private String id;
     private String description;
 
     @ManyToOne
     @JoinColumn(name = "gig_id")
     @JsonIgnore
     private Gig gig;
-
-    public Moment() {
-    }
-
-    public Moment(Long id, String description) {
-        this.id = id;
-        this.description = description;
-    }
 
     public Moment(String description) {
         this.description = description;

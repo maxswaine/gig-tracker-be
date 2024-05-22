@@ -4,7 +4,6 @@ import com.maxswaine.gig.api.dto.Gig;
 import com.maxswaine.gig.api.dto.Moment;
 import com.maxswaine.gig.repository.GigRepository;
 import com.maxswaine.gig.repository.MomentRepository;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,16 +48,11 @@ public class MomentService {
     }
 
     // DELETE
-    public void deleteMoment(Long id) {
+    public void deleteMoment(String id) {
         boolean exists = momentRepository.existsById(id);
         if (!exists) {
             throw new IllegalStateException("Moment does not exist");
         }
         momentRepository.deleteById(id);
-    }
-
-    //     UPDATE
-    @Transactional
-    public void updateMoment(Long id, String moment) {
     }
 }
