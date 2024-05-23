@@ -1,6 +1,7 @@
 package com.maxswaine.gig.controller;
 
 import com.maxswaine.gig.api.dto.Gig;
+import com.maxswaine.gig.exception.GigNotFoundException;
 import com.maxswaine.gig.service.GigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,7 +60,7 @@ public class GigController {
         try {
             gigService.deleteGig(id);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (IllegalArgumentException e) {
+        } catch (GigNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -70,7 +71,7 @@ public class GigController {
         try {
             Gig updatedGig = gigService.updateGigPartial(id, updates);
             return ResponseEntity.ok(updatedGig);
-        } catch (Exception e) {
+        } catch (GigNotFoundException e) {
             return ResponseEntity.badRequest().build();
         }
     }

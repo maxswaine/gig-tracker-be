@@ -2,6 +2,7 @@ package com.maxswaine.gig.service;
 
 import com.maxswaine.gig.api.dto.Gig;
 import com.maxswaine.gig.api.dto.Moment;
+import com.maxswaine.gig.exception.GigNotFoundException;
 import com.maxswaine.gig.repository.GigRepository;
 import com.maxswaine.gig.repository.MomentRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.lang.System.err;
 
 @Service
 @Slf4j
@@ -45,10 +48,7 @@ public class GigService {
                     logger.info("Found gig with id {}: {}", id, gig);
                     return gig;
                 })
-                .orElseThrow(() -> {
-                    logger.error("Gig not found with id {}", id);
-                    return new EntityNotFoundException(id);
-                });
+                .orElseThrow(() -> new GigNotFoundException(id));
     }
 
 
@@ -64,12 +64,9 @@ public class GigService {
     public List<Gig> getGigsByArtist(String artist) {
         List<Gig> gigsByArtist = gigRepository.findGigsByArtistContainingIgnoreCase(artist);
         if (gigsByArtist.isEmpty()) {
-            logger.error("There are no artists that contain {}", artist);
+            logger.error("There are no gigs for artist {}", artist);
         }
-        System.out.println("Getting " + gigsByArtist.size() + " artists:\n");
-        for (Gig gig : gigsByArtist) {
-            System.out.println(gig.getArtist() + "\n");
-        }
+        logger.info("Getting {} gigs:", gigsByArtist.size());
         return gigsByArtist;
     }
 
@@ -89,7 +86,7 @@ public class GigService {
             gigRepository.deleteById(id);
         } else {
             logger.error("Gig does not exist with id: {}", id);
-            throw new IllegalArgumentException("Gig with id " + id + " does not exist");
+            throw new GigNotFoundException(id);
         }
     }
 
