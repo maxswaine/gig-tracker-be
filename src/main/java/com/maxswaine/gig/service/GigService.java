@@ -2,8 +2,11 @@ package com.maxswaine.gig.service;
 
 import com.maxswaine.gig.api.dto.Gig;
 import com.maxswaine.gig.api.dto.Moment;
+import com.maxswaine.gig.api.dto.User;
+import com.maxswaine.gig.api.requests.GigRequest;
 import com.maxswaine.gig.repository.GigRepository;
 import com.maxswaine.gig.repository.MomentRepository;
+import com.maxswaine.gig.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -23,12 +26,14 @@ public class GigService {
     private static final Logger logger = LoggerFactory.getLogger(GigService.class);
     private final GigRepository gigRepository;
     private final MomentRepository momentRepository;
+    private final UserRepository userRepository;
 
 
     @Autowired
-    public GigService(GigRepository gigRepository, MomentRepository momentRepository) {
+    public GigService(GigRepository gigRepository, MomentRepository momentRepository, UserRepository userRepository) {
         this.gigRepository = gigRepository;
         this.momentRepository = momentRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Gig> getAllGigs() {
@@ -73,13 +78,33 @@ public class GigService {
         return gigsByArtist;
     }
 
-    public Gig addGigWithMoments(Gig gig) {
-        logger.info("Gig created with moments:");
-        logger.info(gig.toString());
-        for (Moment moment : gig.getMoments()) {
-            moment.setGig(gig);
+    public Gig addGigWithMoments(GigRequest gigRequest) {
+        User user = userRepository.findById(gigRequest.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Moment> moments = gigRequest.getMoments();
+
+        Gig gig = Gig.builder()
+                .artist(gigRequest.getArtist())
+                .venue(gigRequest.getVenue())
+                .location(gigRequest.getLocation())
+                .date(gigRequest.getDate())
+                .favourite(gigRequest.isFavourite())
+                .user(user)
+                .moments(moments)
+                .build();
+
+        // Set the gig for each moment if moments are present
+        if (moments != null) {
+            for (Moment moment : moments) {
+                moment.setGig(gig);
+            }
         }
-        return gigRepository.save(gig);
+
+        Gig savedGig = gigRepository.save(gig);
+        logger.info("Gig created with moments: {}", savedGig);
+        return savedGig;
+
     }
 
     public void deleteGig(String id) {

@@ -5,11 +5,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
-@Entity
-@Table
 @Getter
 @Setter
-@ToString
+@Entity
+@Table
+@ToString(exclude = "gig")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Moment {

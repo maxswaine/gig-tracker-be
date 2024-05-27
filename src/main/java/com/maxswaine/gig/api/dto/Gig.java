@@ -1,16 +1,16 @@
 package com.maxswaine.gig.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "user")
 @Entity
 @Table
 @AllArgsConstructor
@@ -27,6 +27,11 @@ public class Gig {
     private String location;
     private LocalDateTime date;
     private boolean favourite;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 
     @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Moment> moments;
