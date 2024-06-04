@@ -1,6 +1,7 @@
 package com.maxswaine.gig.controller;
 
 import com.maxswaine.gig.api.dto.Gig;
+import com.maxswaine.gig.api.requests.GigRequest;
 import com.maxswaine.gig.service.GigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,7 +49,7 @@ public class GigController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<Gig> addGigWithMoments(@RequestBody Gig gig) {
+    public ResponseEntity<Gig> addGigWithMoments(@RequestBody GigRequest gig) {
         Gig savedGig = gigService.addGigWithMoments(gig);
         return new ResponseEntity<>(savedGig, HttpStatus.CREATED);
     }
