@@ -71,9 +71,9 @@ public class GigService {
         if (gigsByArtist.isEmpty()) {
             logger.error("There are no artists that contain {}", artist);
         }
-        System.out.println("Getting " + gigsByArtist.size() + " artists:\n");
+        logger.info("Getting {} artists:\n", gigsByArtist.size());
         for (Gig gig : gigsByArtist) {
-            System.out.println(gig.getArtist() + "\n");
+            logger.info("{} + \n", gig.getArtist() );
         }
         return gigsByArtist;
     }
