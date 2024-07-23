@@ -36,7 +36,7 @@ public class GigService {
     public List<Gig> getAllGigs() {
         logger.info("Fetching all gigs");
         List<Gig> allGigs = gigRepository.findAll();
-        logger.info("Retrieved {} gigs", allGigs.size()); // Logging the number of gigs retrieved
+        logger.info("Retrieved {} gigs", allGigs.size());
         return allGigs;
     }
 
