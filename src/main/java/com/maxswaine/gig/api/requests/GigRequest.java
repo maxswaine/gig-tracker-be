@@ -1,6 +1,5 @@
 package com.maxswaine.gig.api.requests;
 
-import com.maxswaine.gig.api.dto.Moment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,5 +17,5 @@ public class GigRequest {
     private String location;
     private LocalDateTime date;
     private boolean favourite;
-    private List<Moment> moments;
+    private List<String> attendeeIds;
 }

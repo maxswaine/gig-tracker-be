@@ -49,8 +49,8 @@ public class GigController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<Gig> addGigWithMoments(@RequestBody GigRequest gig) {
-        Gig savedGig = gigService.addGigWithMoments(gig);
+    public ResponseEntity<Gig> addGig(@RequestBody GigRequest gig) {
+        Gig savedGig = gigService.addGigWithUsers(gig);
         return new ResponseEntity<>(savedGig, HttpStatus.CREATED);
     }
 

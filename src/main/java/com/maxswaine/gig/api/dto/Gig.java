@@ -10,9 +10,9 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString(exclude = "user")
+@ToString(exclude = "attendees")
 @Entity
-@Table
+@Table(name = "gigs")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -28,19 +28,15 @@ public class Gig {
     private LocalDateTime date;
     private boolean favourite;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToMany
+    @JoinTable(
+            name = "gig_attendees",
+            joinColumns = @JoinColumn(name = "gig_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     @JsonIgnore
-    private User user;
+    private List<User> attendees;
 
     @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Moment> moments;
-
-    public Gig(String artist, String venue, String location, LocalDateTime date, boolean favourite) {
-        this.artist = artist;
-        this.venue = venue;
-        this.location = location;
-        this.date = date;
-        this.favourite = favourite;
-    }
 }
