@@ -52,6 +52,9 @@ public class MomentService {
                 .orElseThrow(() -> new RuntimeException("Gig not found"));
         User user = userRepository.findById(momentRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        if(!gig.getAttendees().contains(user)){
+            throw new RuntimeException("User is not part of the gig");
+        }
         List<Moment> moments = new ArrayList<>();
 
         for(String description: momentRequest.getDescriptions()){

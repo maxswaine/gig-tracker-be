@@ -25,12 +25,14 @@ public class GigService {
     private static final Logger logger = LoggerFactory.getLogger(GigService.class);
     private final GigRepository gigRepository;
     private final UserRepository userRepository;
+    private final FriendRequestService friendRequestService;
 
 
     @Autowired
-    public GigService(GigRepository gigRepository, UserRepository userRepository) {
+    public GigService(GigRepository gigRepository, UserRepository userRepository, FriendRequestService friendRequestService) {
         this.gigRepository = gigRepository;
         this.userRepository = userRepository;
+        this.friendRequestService = friendRequestService;
     }
 
     public List<Gig> getAllGigs() {
@@ -84,7 +86,11 @@ public class GigService {
             if (!attendeeId.equals(gigRequest.getUserId())) {
                 User attendee = userRepository.findById(attendeeId)
                         .orElseThrow(() -> new RuntimeException("User with ID " + attendeeId + " not found"));
-                attendees.add(attendee);
+                if(friendRequestService.areFriends(gigRequest.getUserId(), attendeeId)){
+                    attendees.add(attendee);
+                } else {
+                    logger.warn("User with ID " + attendeeId + " is not friends with the user. Skipping this user.");
+                }
             }
         }
 

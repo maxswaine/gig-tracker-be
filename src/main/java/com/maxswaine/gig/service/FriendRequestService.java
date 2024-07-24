@@ -75,4 +75,11 @@ public class FriendRequestService {
         }
         return friendRepository.save(existingFriendRequest);
     }
+
+    public boolean areFriends(String userId, String attendeeId) {
+        List<Friend> friends = getAllFriends(userId);
+        return friends.stream()
+                .filter(friend -> friend.getStatus() == FriendshipStatus.ACCEPTED)
+                .anyMatch(friend -> friend.getFriendId().equals(attendeeId));
+    }
 }
