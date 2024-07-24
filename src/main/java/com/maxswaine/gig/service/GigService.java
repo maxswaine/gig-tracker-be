@@ -1,11 +1,9 @@
 package com.maxswaine.gig.service;
 
 import com.maxswaine.gig.api.dto.Gig;
-import com.maxswaine.gig.api.dto.Moment;
 import com.maxswaine.gig.api.dto.User;
 import com.maxswaine.gig.api.requests.GigRequest;
 import com.maxswaine.gig.repository.GigRepository;
-import com.maxswaine.gig.repository.MomentRepository;
 import com.maxswaine.gig.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,21 +24,21 @@ public class GigService {
 
     private static final Logger logger = LoggerFactory.getLogger(GigService.class);
     private final GigRepository gigRepository;
-    private final MomentRepository momentRepository;
     private final UserRepository userRepository;
+    private final FriendRequestService friendRequestService;
 
 
     @Autowired
-    public GigService(GigRepository gigRepository, MomentRepository momentRepository, UserRepository userRepository) {
+    public GigService(GigRepository gigRepository, UserRepository userRepository, FriendRequestService friendRequestService) {
         this.gigRepository = gigRepository;
-        this.momentRepository = momentRepository;
         this.userRepository = userRepository;
+        this.friendRequestService = friendRequestService;
     }
 
     public List<Gig> getAllGigs() {
         logger.info("Fetching all gigs");
         List<Gig> allGigs = gigRepository.findAll();
-        logger.info("Retrieved {} gigs", allGigs.size()); // Logging the number of gigs retrieved
+        logger.info("Retrieved {} gigs", allGigs.size());
         return allGigs;
     }
 
@@ -78,11 +77,22 @@ public class GigService {
         return gigsByArtist;
     }
 
-    public Gig addGigWithMoments(GigRequest gigRequest) {
+    public Gig addGigWithUsers(GigRequest gigRequest) {
         User user = userRepository.findById(gigRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        List<Moment> moments = gigRequest.getMoments();
+        List<User> attendees = new ArrayList<>();
+        attendees.add(user);
+        for (String attendeeId : gigRequest.getAttendeeIds()) {
+            if (!attendeeId.equals(gigRequest.getUserId())) {
+                User attendee = userRepository.findById(attendeeId)
+                        .orElseThrow(() -> new RuntimeException("User with ID " + attendeeId + " not found"));
+                if(friendRequestService.areFriends(gigRequest.getUserId(), attendeeId)){
+                    attendees.add(attendee);
+                } else {
+                    logger.warn("User with ID " + attendeeId + " is not friends with the user. Skipping this user.");
+                }
+            }
+        }
 
         Gig gig = Gig.builder()
                 .artist(gigRequest.getArtist())
@@ -90,16 +100,8 @@ public class GigService {
                 .location(gigRequest.getLocation())
                 .date(gigRequest.getDate())
                 .favourite(gigRequest.isFavourite())
-                .user(user)
-                .moments(moments)
+                .attendees(attendees)
                 .build();
-
-        // Set the gig for each moment if moments are present
-        if (moments != null) {
-            for (Moment moment : moments) {
-                moment.setGig(gig);
-            }
-        }
 
         Gig savedGig = gigRepository.save(gig);
         logger.info("Gig created with moments: {}", savedGig);
@@ -138,21 +140,13 @@ public class GigService {
                 case "favourite":
                     gigToUpdate.setFavourite((Boolean) value);
                     break;
-                case "moments":
-                    List<Map<String, Object>> moments = (List<Map<String, Object>>) value;
-                    for (Map<String, Object> momentData : moments) {
-                        String momentId = (String) momentData.get("id");
-                        String description = (String) momentData.get("description");
-                        Optional<Moment> momentOptional = momentRepository.findById(momentId);
-                        if (momentOptional.isPresent()) {
-                            Moment moment = momentOptional.get();
-                            moment.setDescription(description);
-                            momentRepository.save(moment);
-                        } else {
-                            Moment newMoment = new Moment(description);
-                            newMoment.setGig(gigToUpdate);
-                            gigToUpdate.getMoments().add(newMoment);
-                            momentRepository.save(newMoment);
+                case "attendeeIds":
+                    List<String> attendees = (List<String>) value;
+                    List<User> users = gigToUpdate.getAttendees();
+                    for(String userId: attendees){
+                        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User with ID " + userId + " not found"));
+                        if(!gigToUpdate.getAttendees().contains(user)){
+                            users.add(user);
                         }
                     }
                     break;

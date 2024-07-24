@@ -8,10 +8,11 @@ import org.hibernate.annotations.UuidGenerator;
 @Getter
 @Setter
 @Entity
-@Table
+@Table(name = "moments")
 @ToString(exclude = "gig")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Moment {
     @Id
     @UuidGenerator
@@ -23,7 +24,8 @@ public class Moment {
     @JsonIgnore
     private Gig gig;
 
-    public Moment(String description) {
-        this.description = description;
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 }

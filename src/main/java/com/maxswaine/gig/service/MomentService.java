@@ -2,8 +2,11 @@ package com.maxswaine.gig.service;
 
 import com.maxswaine.gig.api.dto.Gig;
 import com.maxswaine.gig.api.dto.Moment;
+import com.maxswaine.gig.api.dto.User;
+import com.maxswaine.gig.api.requests.MomentRequest;
 import com.maxswaine.gig.repository.GigRepository;
 import com.maxswaine.gig.repository.MomentRepository;
+import com.maxswaine.gig.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +18,17 @@ import java.util.List;
 @Service
 public class MomentService {
 
-    private static final Logger logger = LoggerFactory.getLogger(GigService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MomentService.class);
 
     private final MomentRepository momentRepository;
     private final GigRepository gigRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public MomentService(MomentRepository momentRepository, GigRepository gigRepository) {
+    public MomentService(MomentRepository momentRepository, GigRepository gigRepository, UserRepository userRepository) {
         this.momentRepository = momentRepository;
         this.gigRepository = gigRepository;
+        this.userRepository = userRepository;
     }
 
     // READ
@@ -42,9 +47,26 @@ public class MomentService {
     }
 
     // CREATE
-    public void addMoments(List<Moment> moments) {
-        logger.info("Saving {} moments associated with gig", moments.size());
-        momentRepository.saveAll(moments);
+    public List<Moment> addMoments(MomentRequest momentRequest) {
+        Gig gig = gigRepository.findById(momentRequest.getGigId())
+                .orElseThrow(() -> new RuntimeException("Gig not found"));
+        User user = userRepository.findById(momentRequest.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if(!gig.getAttendees().contains(user)){
+            throw new RuntimeException("User is not part of the gig");
+        }
+        List<Moment> moments = new ArrayList<>();
+
+        for(String description: momentRequest.getDescriptions()){
+            Moment moment = Moment.builder()
+                    .user(user)
+                    .gig(gig)
+                    .description(description)
+                    .build();
+            moments.add(moment);
+            logger.info("Added moment {}", description);
+        }
+        return momentRepository.saveAll(moments);
     }
 
     // DELETE
