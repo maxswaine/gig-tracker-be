@@ -4,7 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -15,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User {
+public class User implements Serializable {
 
     @Id
     @UuidGenerator
@@ -26,6 +31,7 @@ public class User {
     private String email;
     private String username;
     private String password;
+    private Role role;
 
     @ManyToMany
     @JoinTable(
@@ -39,4 +45,9 @@ public class User {
     @ManyToMany(mappedBy = "attendees")
     @JsonIgnore
     private List<Gig> gigs;
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(role);
+    }
+
 }
