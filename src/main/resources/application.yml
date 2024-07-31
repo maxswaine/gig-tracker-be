@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: Gig Tracker
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/GigTrackerDatabase
+    username: root
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+application:
+  security:
+    jwt:
+      secret-key: be1939507f97c01317c80e0e0ec8b5a2057387400f42369feacc434a02fc3f43
+      expiration: 86400000
+      refresh-token:
+        expiration: 604800000
