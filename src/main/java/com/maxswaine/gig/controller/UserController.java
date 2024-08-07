@@ -1,5 +1,6 @@
 package com.maxswaine.gig.controller;
 
+import com.maxswaine.gig.api.dto.User;
 import com.maxswaine.gig.api.requests.UserRequest;
 import com.maxswaine.gig.api.responses.AuthenticationResponse;
 import com.maxswaine.gig.repository.UserRepository;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -22,11 +25,10 @@ public class UserController {
     // CREATE
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRequest request) {
-        System.out.println("UserRequest received: " + request);
-        if (request == null) {
-            return ResponseEntity.badRequest().body("Request body is null");
+        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+        if (existingUser.isPresent()) {
+            return ResponseEntity.ok("User already exists with this username");
         }
-        // Process the request
         AuthenticationResponse response = userService.registerUser(request);
         return ResponseEntity.ok(response);
     }

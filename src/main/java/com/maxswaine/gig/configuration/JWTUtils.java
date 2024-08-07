@@ -38,11 +38,23 @@ public class JWTUtils {
         return claimsResolver.apply(claims);
     }
 
-    public String generateRefreshToken(
-            User userDetails
-    ) {
+    public String generateRefreshToken(User userDetails) {
         return createToken(new HashMap<>(), userDetails, refreshExpiration);
     }
+
+    public String generateToken(User userDetails) {
+        return generateToken(userDetails, new HashMap<>());
+    }
+
+    public String generateToken(User userDetails, Map<String, Object> claims) {
+        return createToken(claims, userDetails, jwtExpiration);
+    }
+
+    public Boolean validateToken(String token, User userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
@@ -56,14 +68,6 @@ public class JWTUtils {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(User userDetails) {
-        return generateToken(userDetails, new HashMap<>());
-    }
-
-    public String generateToken(User userDetails, Map<String, Object> claims) {
-        return createToken(claims, userDetails, jwtExpiration);
-    }
-
     private String createToken(Map<String, Object> claims, User userDetails, long expiration) {
 
         return Jwts.builder()
@@ -74,11 +78,6 @@ public class JWTUtils {
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey())
                 .compact();
-    }
-
-    public Boolean validateToken(String token, User userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     private SecretKey getSignInKey(){

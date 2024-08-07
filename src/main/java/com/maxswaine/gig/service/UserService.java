@@ -27,11 +27,11 @@ public class UserService {
 
     public AuthenticationResponse registerUser(UserRequest request) {
         User newUser = User.builder()
-                .firstname(request.firstname())
-                .lastname(request.lastname())
-                .email(request.email())
-                .username(request.username())
-                .password(passwordEncoder.encode(request.password()))
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
         logger.info("Creating new user");

@@ -31,19 +31,17 @@ public class JWTAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        // Log the incoming request details
-        System.out.println("Request URI: " + request.getRequestURI());
-        System.out.println("Request Method: " +  request.getMethod());
-        System.out.println("Request Headers: " + request.getHeaderNames());
-
-        // Log headers specifically
         String authHeader = request.getHeader(AUTHORIZATION);
-        System.out.println("Authorization Header " + authHeader);
-        if (request.getServletPath().contains("/api/v1/users/register")){
+
+        // Log the authentication header and request path
+        System.out.println("Auth Header: " + authHeader);
+        System.out.println("Request Path: " + request.getServletPath());
+
+        if (request.getServletPath().contains("/api/v1/users/register") || request.getServletPath().contains("/api/v1/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
-//        final String authHeader = request.getHeader(AUTHORIZATION);
+
         final String username;
         final String jwtToken;
 
@@ -54,9 +52,11 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
         jwtToken = authHeader.substring(7);
         username = jwtUtils.extractUsername(jwtToken);
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        System.out.println("Extracted Username: " + username);
 
-            User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found with username " + username));
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with username " + username));
 
             if (Boolean.TRUE.equals(jwtUtils.validateToken(jwtToken, user))) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -65,8 +65,8 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                         user.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authentication Token Set");
             }
-
         }
         filterChain.doFilter(request, response);
     }
