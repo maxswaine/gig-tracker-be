@@ -1,33 +1,36 @@
 package com.maxswaine.gig.controller;
 
 import com.maxswaine.gig.api.dto.User;
+import com.maxswaine.gig.api.requests.UserRequest;
+import com.maxswaine.gig.api.responses.AuthenticationResponse;
 import com.maxswaine.gig.repository.UserRepository;
 import com.maxswaine.gig.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
     private final UserRepository userRepository;
 
-    @Autowired
-    public UserController(UserService userService, UserRepository userRepository){
-        this.userService = userService;
-        this.userRepository = userRepository;
-    }
-
     // READ
 
     // CREATE
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user){
-        User newUser = userService.addUser(user);
-        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody UserRequest request) {
+        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+        if (existingUser.isPresent()) {
+            return ResponseEntity.ok("User already exists with this username");
+        }
+        AuthenticationResponse response = userService.registerUser(request);
+        return ResponseEntity.ok(response);
     }
 
     // DELETE
