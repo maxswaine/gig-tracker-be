@@ -23,11 +23,11 @@ public class AuthenticationService {
     public AuthenticationResponse authenticateLogin(AuthenticationRequest loginRequest) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
-            User user = userRepository.findByUsername(loginRequest.username())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found with username " + loginRequest.username()));
+            User user = userRepository.findByUsernameOrEmail(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with username " + loginRequest.getUsername()));
 
             String jwtToken = jwtUtils.generateToken(user);
 
