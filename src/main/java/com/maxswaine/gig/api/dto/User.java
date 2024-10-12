@@ -1,7 +1,6 @@
 package com.maxswaine.gig.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -51,6 +50,10 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "attendees")
     @JsonIgnore
     private List<Gig> gigs;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Festival> festivals;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

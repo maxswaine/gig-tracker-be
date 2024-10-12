@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Gig {
 
     @Id
