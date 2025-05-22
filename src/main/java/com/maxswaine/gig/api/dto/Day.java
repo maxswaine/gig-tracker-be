@@ -1,18 +1,15 @@
 package com.maxswaine.gig.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.UuidGenerator;
-
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@Builder
+@Entity
+@Table(name = "days")
 public class Day {
     @Id
     @UuidGenerator

@@ -41,3 +41,4 @@ public class Gig {
     @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Moment> moments;
 }
+

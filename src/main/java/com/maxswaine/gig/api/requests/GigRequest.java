@@ -18,4 +18,15 @@ public class GigRequest {
     private LocalDateTime date;
     private boolean favourite;
     private List<String> attendeeIds;
+
+    public GigRequest(String userId, String artist, String venue, String location, LocalDateTime date, boolean favourite) {
+        this.userId = userId;
+        this.artist = artist;
+        this.venue = venue;
+        this.location = location;
+        this.date = date;
+        this.favourite = favourite;
+    }
+
+
 }
